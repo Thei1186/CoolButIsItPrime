@@ -54,24 +54,34 @@ namespace CoolButIsItPrime {
             }
             listOfPrimes.Sort();
             await Task.Run(() => {
-                foreach (long item in listOfPrimes) {
-                    if(cancelled) {
+                List<long> tempList = new List<long>();
+                int count = 0;
+                int batchSize = 1000;
+                int remaining = listOfPrimes.Count;
+                for (int i = 0; i < listOfPrimes.Count; i++) {
+                    if (cancelled) {
                         break;
                     }
-                    // Adding one item to the listBox at a time is slow,
-                    // maybe come up with a way to add it in batches
-                    UpdateUI(item);
+                    count++;
+                    remaining--;
+                    tempList.Add(listOfPrimes[i]);
+                    if (count == batchSize || (remaining - count ) < 0) {
+                        count = 0;
+                        UpdateUI(tempList);
+                        tempList.Clear();
+                    }
                 }
             });
             //  listBox1.Refresh();
             button2.Enabled = false;
             button1.Enabled = true;
         }
-        public void UpdateUI(long value) {          
+        public void UpdateUI(List<long> value) {
+            object[] arr = value.Cast<object>().ToArray();
             //Send the update to our UI thread
             synchronizationContext.Post(new SendOrPostCallback(o => {
-                listBox1.Items.Add((long)o);
-            }), value);
+                listBox1.Items.AddRange((object[])o);
+            }), arr);
 
             // Let the thread sleep as to avoid freezing the GUI
             Thread.Sleep(35);
@@ -80,7 +90,7 @@ namespace CoolButIsItPrime {
         private void radioButton_CheckedChanged(object sender, EventArgs e) {
             RadioButton rb = sender as RadioButton;
 
-            if (rb.Name.Equals("Sequential") && rb.Checked ) {
+            if (rb.Name.Equals("Sequential") && rb.Checked) {
                 sequential = true;
             } else {
                 sequential = false;
