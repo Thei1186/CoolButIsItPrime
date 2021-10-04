@@ -90,9 +90,9 @@ namespace CoolButIsItPrime {
         private void radioButton_CheckedChanged(object sender, EventArgs e) {
             RadioButton rb = sender as RadioButton;
 
-            if (rb.Name.Equals("Sequential") && rb.Checked) {
+            if (rb.Text.ToLower() == "sequential" && rb.Checked) {
                 sequential = true;
-            } else {
+            } else if (rb.Text.ToLower() == "parallel" && rb.Checked){
                 sequential = false;
             }
         }
